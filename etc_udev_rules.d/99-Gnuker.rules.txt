@@ -1,0 +1,8 @@
+KERNEL=="sd[a-z]", SUBSYSTEM=="block", ACTION=="add", RUN+="/usr/bin/sudo /usr/local/bin/starter.sh $name"
+
+
+try this:
+
+ACTION=="add", KERNEL=="sd*[!0-9]", ENV{ID_FS_UUID_ENC}=="FFFF-AAAF",
+  RUN+="/usr/bin/sudo -u juser /home/juser/path/script.sh"
+
