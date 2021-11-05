@@ -1,71 +1,75 @@
 #!/bin/bash
 # inspiration for tool from here:https://www.reddit.com/r/raspberry_pi/comments/4w5p53/idea_raspberry_pi_appliance_autoformat_usb_thumb/
 
-date=$(date)
-echo ------------------------------------------------ >> /var/log/Gnuke
-echo $date >>var/log/Gnuke
-echo  Gnuking Drive $1 >> /var/log/Gnuke
-
 # instantiate pi led
-echo gpio | sudo tee /sys/class/leds/led0/trigger
+echo gpio | sudo tee /sys/class/leds/led0/trigger 
+date=$(date) 
+echo ------------------------------------------------ >> /var/log/Gnuke 
+echo $date >>var/log/Gnuke echo Gnuking Drive $1 >> /var/log/Gnuke
+#Commands grouped by the braces with ampersand after them will be executed asynchronously in a subshell
+
 
 #  blink light to show activity
-echo heartbeat | sudo tee /sys/class/leds/led0/trigger 
-#play bomb noise and send to background
-omxplayer --no-keys /usr/local/bin/bomb.wav &
+echo heartbeat | sudo tee /sys/class/leds/led0/trigger
 
-#zero  is faster than random
-#sudo dd if=/dev/urandom of=/dev/$1 bs=4096 conv=fsync
-#sudo dd if=/dev/zero of=/dev/$1 bs=4096 conv=fsync
 
 echo Creating Partition on $1 USB drive >> /var/log/Gnuke
 
-
-#create label for usb device
-echo label\: Gnuked | sudo sfdisk/dev/$1
-
 #send command to sfdisk  to create W95 FAT32 (LBA) from:https://suntong.github.io/blogs/2015/12/25/use-sfdisk-to-partition-disks/ 
 echo ,,c\; | sudo  sfdisk /dev/$1 --no-reread
-
-#debug check if usb is mounted
-#df -h
-
+echo created fat32 partition on /dev/$1 >> var/log/Gnuke
 
 #after sfdisk, seems disk is automounted, unmount so it can be formatted
-#unmount with umount /pi/media
+
 for device in /media/pi/*
 do
-    umount $device
+   umount $device
+   echo unmounted $device >> /var/log/Gnuke
 done
 
-# Format drive FAT32
-sudo mkfs.vfat /dev/$1 -I
 
-#change the drive lable  as our calling card
-sudo mlabel -i /dev/sda \:\:Gnuked
+# Format drive FAT32 for compatibilty with mac, windows,linux up to 2TB limit
+sudo mkfs.vfat /dev/$11 -I
+echo formatted /dev/$1 Fat32 >> /var/log/Gnuke
+# Format drive NTFS for compatibility with mac,windows,linux it has a "quick format" option
+#must specify the partion too
+#sudo mkfs.ntfs -f /dev/$11
+#echo formatted /dev/$1 NTFS >> /var/log/Gnuke
+#send command to sfdisk  to create W95 FAT32 (LBA) from:https://suntong.github.io/blogs/2015/12/25/use-sfdisk-to-partition-disks/
+#do this again, so windows prompts you to format the drive, ensuring it is wiped
+#echo ,,c\; | sudo  sfdisk /dev/$1 --no-reread
+#echo created fat32 partition on /dev/$1 >> var/log/Gnuke
 
 
-echo Detaching $1 >> /var/log/Gnuke
-echo Detaching $1
-sudo udisks --detach /dev/$1
 
-# Turn off LED  activity 
+#change the drive label  as our calling card
+#sudo mlabel -i /dev/$1 \:\:GNUKED
+#echo changed /dev/$1 label to "GNUKED" >> /var/log/Gnuke
+#eject disk for safe removal
+#sudo eject /dev/$1
+#check number of files on disk to make sure it is empty
+sudo mount /dev/$1 /media/pi/$1
+files=$(sudo ls /media/pi/$1 | wc -l)
+echo dircount = $files >> /var/log/Gnuke
+if [ $files -gt 1 ];
+then
+echo /dev/$1 is not empty >> /var/log/Gnuke
+else
+echo /dev/$1 is empty >> /var/log/Gnuke
+(echo sudo speaker-test -c1 -r22050 -l1 --test=wav -w /usr/local/bin/bomb.wav | at now) &
+fi
+
+
+#(echo sudo speaker-test -c1 -r22050 -l1 --test=wav -w /usr/local/bin/bomb.wav | at now) &
+
+
+#get date again, since time has passed since our last get
+date=$(date)
+
+echo USB drive $1 Gnuked $date. Ready for removal >> /var/log/Gnuke
+
+# Turn off LED activity
 echo 0 | sudo tee /sys/class/leds/led0/brightness 
 
-date=$(date)
-echo $date >> /var/log/Gnuke
+echo Contents of /dev/$1: >> /var/log/Gnuke ls -al /dev/$1 >> /var/log/Gnuke
 
-
-echo USB drive $1 Gnuked. Ready for removal >> /var/log/Gnuke
-
-# To restore LED outside of script use this command
-# echo mmc0 | sudo tee /sys/class/leds/led0/trigger
-echo ------------------------------------------------ >> /var/log/Gnuke
-echo >> /var/log/Gnuke
-echo >> /var/log/Gnuke
-echo >> /var/log/Gnuke
-
-echo >> /var/log/Gnuke
-echo >> /var/log/Gnuke
-echo >> /var/log/Gnuke
-echo >> /var/log/Gnuke
