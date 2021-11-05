@@ -12,25 +12,24 @@ Project created by Gavin Thomas.
 this tool uses speakers to play a bomb.wav file on completion of the drive wipe. 
 this isn't necessary for the tool to work. you can use the onboard pi led light for status.
 
-load your raspberry pi with raspian
+# load your raspberry pi with raspian
 
-In /etc/udev/rules.d/ create a file called 99-Gnuker.rules
+# In /etc/udev/rules.d/ create a file called 99-Gnuker.rules
   file contents: 
   KERNEL=="sd*[!0-9]", SUBSYSTEM=="block", ACTION=="add", RUN+="/usr/bin/sudo /usr/local/bin/Gnuke.sh $name"
 
   
-In /usr/local/bin create 2 files.
+# In /usr/local/bin create 2 files.
 
-
-Gnuke.sh
+# Gnuke.sh
 #!/bin/bash
-# instantiate pi led
+#instantiate pi led
 echo gpio | sudo tee /sys/class/leds/led0/trigger 
 date=$(date) 
 echo ------------------------------------------------ >> /var/log/Gnuke 
 echo $date >>var/log/Gnuke echo Gnuking Drive $1 >> /var/log/Gnuke
 #Commands grouped by the braces with ampersand after them will be executed asynchronously in a subshell
-#  blink light to show activity
+#blink light to show activity
 echo heartbeat | sudo tee /sys/class/leds/led0/trigger
 echo Creating Partition on $1 USB drive >> /var/log/Gnuke
 #send command to sfdisk  to create W95 FAT32 (LBA) from:https://suntong.github.io/blogs/2015/12/25/use-sfdisk-to-partition-disks/ 
@@ -42,7 +41,7 @@ do
    umount $device
    echo unmounted $device >> /var/log/Gnuke
 done
-# Format drive FAT32 for compatibilty with mac, windows,linux up to 2TB limit
+#Format drive FAT32 for compatibilty with mac, windows,linux up to 2TB limit
 sudo mkfs.vfat /dev/$11 -I
 echo formatted /dev/$1 Fat32 >> /var/log/Gnuke
 sudo mount /dev/$1 /media/pi/$1
@@ -59,17 +58,17 @@ fi
 #get date again, since time has passed since our last get
 date=$(date)
 echo USB drive $1 Gnuked $date. Ready for removal >> /var/log/Gnuke
-# Turn off LED activity
+#Turn off LED activity
 echo 0 | sudo tee /sys/class/leds/led0/brightness 
 echo Contents of /dev/$1: >> /var/log/Gnuke ls -al /dev/$1 >> /var/log/Gnuke
 
-launch_Gnuke.sh
-file contents:
+# launch_Gnuke.sh
+# file contents:
 echo /usr/local/bin/Gnuke.sh $1 | at now
 
 
-reboot the pi to activate the udev rule.
-anything plugged into the USB ports will be repartitioned and formatted.
+# reboot the pi to activate the udev rule.
+# anything plugged into the USB ports will be repartitioned and formatted.
 
 
 
