@@ -31,22 +31,7 @@ done
 # Format drive FAT32 for compatibilty with mac, windows,linux up to 2TB limit
 sudo mkfs.vfat /dev/$11 -I
 echo formatted /dev/$1 Fat32 >> /var/log/Gnuke
-# Format drive NTFS for compatibility with mac,windows,linux it has a "quick format" option
-#must specify the partion too
-#sudo mkfs.ntfs -f /dev/$11
-#echo formatted /dev/$1 NTFS >> /var/log/Gnuke
-#send command to sfdisk  to create W95 FAT32 (LBA) from:https://suntong.github.io/blogs/2015/12/25/use-sfdisk-to-partition-disks/
-#do this again, so windows prompts you to format the drive, ensuring it is wiped
-#echo ,,c\; | sudo  sfdisk /dev/$1 --no-reread
-#echo created fat32 partition on /dev/$1 >> var/log/Gnuke
 
-
-
-#change the drive label  as our calling card
-#sudo mlabel -i /dev/$1 \:\:GNUKED
-#echo changed /dev/$1 label to "GNUKED" >> /var/log/Gnuke
-#eject disk for safe removal
-#sudo eject /dev/$1
 #check number of files on disk to make sure it is empty
 sudo mount /dev/$1 /media/pi/$1
 files=$(sudo ls /media/pi/$1 | wc -l)
@@ -59,9 +44,7 @@ echo /dev/$1 is empty >> /var/log/Gnuke
 (echo sudo speaker-test -c1 -r22050 -l1 --test=wav -w /usr/local/bin/bomb.wav | at now) &
 fi
 
-
 #(echo sudo speaker-test -c1 -r22050 -l1 --test=wav -w /usr/local/bin/bomb.wav | at now) &
-
 
 #get date again, since time has passed since our last get
 date=$(date)
