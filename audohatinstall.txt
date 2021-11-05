@@ -1,1 +1,0 @@
-curl -sS https://raw.githubusercontent.com/adafruit/raspberry-pi-installer-scripts/master/i2sa
